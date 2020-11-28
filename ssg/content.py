@@ -1,7 +1,7 @@
 import re
 from abc import ABC
 
-from yaml import FullLoader
+from yaml import load, FullLoader
 from collections.abc import Mapping
 
 
