@@ -1,10 +1,13 @@
+import sys
+from docutils.core import publish_parts
+from markdown import markdown
+from ssg.content import Content
 from typing import List
 from pathlib import Path
 import shutil
 
 
 class Parser:
-
     extensions: List[str] = []
 
     def valid_extension(self, extension):
@@ -27,8 +30,29 @@ class Parser:
 
 
 class ResourceParser(Parser):
-
     extensions = [".jpg", ".png", ".gif", ".css", ".html"]
 
     def parse(self, path: Path, source: Path, dest: Path):
         self.copy(path=path, source=source, dest=dest)
+
+
+class MarkdownParser(Parser):
+
+    extensions = [".md", ".markdown"]
+
+    def parse(self, path: Path, source: Path, dest: Path):
+        content = Content.load(self.read(path))
+        html = markdown(content.body)
+        self.write(path=path, dest=dest, content=html)
+        sys.stdout.write("\x1b[1;32m{} converted to HTML. Metadata: {}\n".format(path.name, content))
+
+
+class ReStructuredTextParser(Parser):
+
+    extensions = [".rst"]
+
+    def parse(self, path: Path, source: Path, dest: Path):
+        content = Content.load(self.read(path))
+        html = publish_parts(content.body, writer_name="html5")
+        self.write(path, dest, html["html_body"])
+        sys.stdout.write("\x1b[1;32m{} converted to HTML. Metadata: {}\n".format(path.name, content))
